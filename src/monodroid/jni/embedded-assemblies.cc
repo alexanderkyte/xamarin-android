@@ -494,7 +494,7 @@ try_load_typemaps_from_directory (const char *path) {
 	char *val = NULL;
 	monodroid_dir_t *dir;
 	monodroid_dirent_t b, *e;
-	log_info (LOG_ASSEMBLY, "load_typemaps_from_override_directory");
+	log_info (LOG_DEFAULT, "load_typemaps_from_override_directory");
 	char *dir_path = utils.path_combine (path, "typemaps");
 	if (dir_path == NULL || !utils.directory_exists (dir_path)) {
 			log_warn (LOG_DEFAULT, "directory does not exist: `%s`", dir_path);
@@ -512,7 +512,7 @@ try_load_typemaps_from_directory (const char *path) {
 		log_warn (LOG_DEFAULT, "checking file: `%s`", e->d_name);
 		char *file_path = utils.path_combine (dir_path, e->d_name);
 		int len = androidSystem.monodroid_read_file_into_memory (file_path, &val);
-		log_info (LOG_ASSEMBLY, "read %s into memory length %d", file_path, len);
+		log_info (LOG_DEFAULT, "read %s into memory length %d", file_path, len);
 		if (len > 0 && val != NULL) {
 			if (utils.monodroid_dirent_hasextension (e, ".mj")) {
 				add_type_mapping (&managed_to_java_maps, NULL, NULL, ((const char*)val));
