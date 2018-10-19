@@ -491,31 +491,46 @@ int
 try_load_typemaps_from_directory (const char *path) {
 	// read the entire typemap file into a string
 	// process the string using the add_type_mapping
-	char *full_path = NULL;
 	char *val = NULL;
+	monodroid_dir_t *dir;
+	monodroid_dirent_t b, *e;
 	log_info (LOG_ASSEMBLY, "load_typemaps_from_override_directory");
-	full_path = utils.path_combine (path, "typemaps/typemap.jm");
-	log_info (LOG_ASSEMBLY, "looking for %s", full_path);
-	if (utils.file_exists (full_path)) {
-		log_info (LOG_ASSEMBLY, "found %s", full_path);
-		int len = androidSystem.monodroid_read_file_into_memory (full_path, &val);
-		log_info (LOG_ASSEMBLY, "read %s into memory length %d", full_path, len);
-		if (len > 0 && val != NULL) {
-			add_type_mapping (&java_to_managed_maps, NULL, NULL, ((const char*)val));
+	char *dir_path = dir_path = utils.path_combine (path, "typemaps");
+	if (dir_path == NULL || !utils.directory_exists (dir_path)) {
+			log_warn (LOG_DEFAULT, "directory does not exist: `%s`", dir_path);
+			free (dir_path);
+			return 0;
+	}
+
+	if ((dir = utils.monodroid_opendir (dir_path)) == NULL) {
+		log_warn (LOG_DEFAULT, "could not open directory: `%s`", dir_path);
+		free (dir_path);
+		return 0;
+	}
+
+	while (readdir_r (dir, &b, &e) == 0 && e) {
+		log_warn (LOG_DEFAULT, "checking file: `%s`", e->d_name);
+		if (utils.monodroid_dirent_hasextension (e, ".mj")) {
+			// load typemap from file in managed_to_java_maps
+			int len = androidSystem.monodroid_read_file_into_memory (e->d_name, &val);
+			log_info (LOG_ASSEMBLY, "read %s into memory length %d", e->d_name, len);
+			if (len > 0 && val != NULL) {
+				add_type_mapping (&managed_to_java_maps, NULL, NULL, ((const char*)val));
+				free (val);
+			}
+		}
+		if (utils.monodroid_dirent_hasextension (e, ".jm")) {
+			// load typemap from file into java_to_managed_maps
+			int len = androidSystem.monodroid_read_file_into_memory (e->d_name, &val);
+			log_info (LOG_ASSEMBLY, "read %s into memory length %d", e->d_name, len);
+			if (len > 0 && val != NULL) {
+				add_type_mapping (&java_to_managed_maps, NULL, NULL, ((const char*)val));
+				free (val);
+			}
 		}
 	}
-	free (full_path);
-	full_path = utils.path_combine (path, "typemaps/typemap.mj");
-	log_info (LOG_ASSEMBLY, "looking for %s", full_path);
-	if (utils.file_exists (full_path)) {
-		log_info (LOG_ASSEMBLY, "found %s", full_path);
-		int len = androidSystem.monodroid_read_file_into_memory (full_path, &val);
-		log_info (LOG_ASSEMBLY, "read %s into memory length %d", full_path, len);
-		if (len > 0 && val != NULL) {
-			add_type_mapping (&managed_to_java_maps, NULL, NULL, ((const char*)val));
-		}
-	}
-	free (full_path);
+	utils.monodroid_closedir (dir);
+	free (dir_path);
 	return 0;
 }
 
