@@ -514,7 +514,7 @@ try_load_typemaps_from_directory (const char *path) {
 		char *file_path = utils.path_combine (dir_path, e->d_name);
 		if (utils.monodroid_dirent_hasextension (e, ".mj") || utils.monodroid_dirent_hasextension (e, ".jm")) {
 			int len = androidSystem.monodroid_read_file_into_memory (file_path, &val);
-			log_info (LOG_DEFAULT, "read %s into memory length %d", file_path, len);
+			log_info (LOG_ASSEMBLY, "read %s into memory length %d", file_path, len);
 			if (len > 0 && val != NULL) {
 				if (utils.monodroid_dirent_hasextension (e, ".mj")) {
 					if (!add_type_mapping (&managed_to_java_maps, NULL, NULL, ((const char*)val)))
