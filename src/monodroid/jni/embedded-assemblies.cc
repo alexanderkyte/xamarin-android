@@ -512,16 +512,18 @@ try_load_typemaps_from_directory (const char *path) {
 	while (readdir_r (dir, &b, &e) == 0 && e) {
 		log_warn (LOG_DEFAULT, "checking file: `%s`", e->d_name);
 		char *file_path = utils.path_combine (dir_path, e->d_name);
-		int len = androidSystem.monodroid_read_file_into_memory (file_path, &val);
-		log_info (LOG_DEFAULT, "read %s into memory length %d", file_path, len);
-		if (len > 0 && val != NULL) {
-			if (utils.monodroid_dirent_hasextension (e, ".mj")) {
-				if (!add_type_mapping (&managed_to_java_maps, NULL, NULL, ((const char*)val)))
-					free (val);
-			}
-			if (utils.monodroid_dirent_hasextension (e, ".jm")) {
-				if (!add_type_mapping (&java_to_managed_maps, NULL, NULL, ((const char*)val)))
-					free (val);
+		if (utils.monodroid_dirent_hasextension (e, ".mj") || utils.monodroid_dirent_hasextension (e, ".jm")) {
+			int len = androidSystem.monodroid_read_file_into_memory (file_path, &val);
+			log_info (LOG_DEFAULT, "read %s into memory length %d", file_path, len);
+			if (len > 0 && val != NULL) {
+				if (utils.monodroid_dirent_hasextension (e, ".mj")) {
+					if (!add_type_mapping (&managed_to_java_maps, NULL, NULL, ((const char*)val)))
+						free (val);
+				}
+				if (utils.monodroid_dirent_hasextension (e, ".jm")) {
+					if (!add_type_mapping (&java_to_managed_maps, NULL, NULL, ((const char*)val)))
+						free (val);
+				}
 			}
 		}
 		free (file_path);
